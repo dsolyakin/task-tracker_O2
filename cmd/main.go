@@ -1,9 +1,7 @@
 package main
 
-import (
-	tasktracker "github.com/dsolyakin/task-tracker"
-)
+import "github.com/dsolyakin/task-tracker/internal/server"
 
 func main() {
-	tasktracker.StartServer()
+	server.StartServer()
 }
