@@ -1,7 +1,12 @@
 package main
 
-import "github.com/dsolyakin/task-tracker/internal/server"
+import (
+	"github.com/dsolyakin/task-tracker/internal/http"
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	server.StartServer()
+	r := gin.Default()
+	http.InitRoutes(r)
+	r.Run()
 }
