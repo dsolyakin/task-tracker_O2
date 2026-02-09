@@ -1,6 +1,6 @@
 package domain
 
 type Task struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID    int    `json:"id"`
+	Title string `json:"name"`
 }
