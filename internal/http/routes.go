@@ -6,23 +6,15 @@ import (
 )
 
 func InitRoutes(r *gin.Engine, db *gorm.DB) {
-	r.GET("/tasks", func(c *gin.Context) {
-		GetTaskListHandler(c, db)
-	})
+	h := &TaskHandler{DB: db}
 
-	r.POST("/tasks", func(c *gin.Context) {
-		CreateTaskHandler(c, db)
-	})
+	r.GET("/tasks", h.GetTaskListHandler)
 
-	r.DELETE("/tasks/:id", func(c *gin.Context) {
-		DeleteTaskHandler(c, db)
-	})
+	r.POST("/tasks", h.CreateTaskHandler)
 
-	r.GET("/tasks/:id", func(c *gin.Context) {
-		GetTaskIdHandler(c, db)
-	})
+	r.DELETE("/tasks/:id", h.DeleteTaskHandler)
 
-	r.PUT("/tasks/:id", func(c *gin.Context) {
-		UpdateTaskHandler(c, db)
-	})
+	r.GET("/tasks/:id", h.GetTaskIdHandler)
+
+	r.PUT("/tasks/:id", h.UpdateTaskHandler)
 }
