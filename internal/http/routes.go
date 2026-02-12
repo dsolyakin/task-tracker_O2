@@ -29,4 +29,6 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 	protected.GET("/tags", tagH.GetTagListHandler)
 	protected.POST("/tags", tagH.CreateTagHandler)
 
+	protected.DELETE("/users/:id", authH.DeleteUserHandler)
+
 }

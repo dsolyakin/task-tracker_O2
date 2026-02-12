@@ -251,6 +251,17 @@ func (a *AuthHandler) LoginHandler(c *gin.Context) {
 
 }
 
+func (a *AuthHandler) DeleteUserHandler(c *gin.Context) {
+	id := c.Param("id")
+
+	result := a.DB.Delete(&domain.User{}, id)
+	if result.RowsAffected == 0 {
+		c.JSON(404, gin.H{"error": "Пользователь не найден"})
+		return
+	}
+	c.Status(204)
+}
+
 func GenerateToken(userID uint) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 
