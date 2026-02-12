@@ -14,7 +14,7 @@ func InitDB(dsn string) *gorm.DB {
 		panic("failed to connect database")
 	}
 
-	err = db.AutoMigrate(&domain.Task{}, &domain.Category{})
+	err = db.AutoMigrate(&domain.Task{}, &domain.Category{}, &domain.Tag{})
 	if err != nil {
 		panic("Не удалось выполнить миграцию базы данных")
 	}

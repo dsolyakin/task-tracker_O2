@@ -8,6 +8,7 @@ import (
 func InitRoutes(r *gin.Engine, db *gorm.DB) {
 	taskH := &TaskHandler{DB: db}
 	catH := &CategoryHandler{DB: db}
+	tagH := &TagHandler{DB: db}
 
 	r.GET("/tasks", taskH.GetTaskListHandler)
 	r.POST("/tasks", taskH.CreateTaskHandler)
@@ -17,4 +18,7 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 
 	r.GET("/categories", catH.GetCategoryListHandler)
 	r.POST("/categories", catH.CreateCategoryHandler)
+
+	r.GET("/tags", tagH.GetTagListHandler)
+	r.POST("/tags", tagH.CreateTagHandler)
 }
