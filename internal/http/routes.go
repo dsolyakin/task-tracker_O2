@@ -9,16 +9,24 @@ func InitRoutes(r *gin.Engine, db *gorm.DB) {
 	taskH := &TaskHandler{DB: db}
 	catH := &CategoryHandler{DB: db}
 	tagH := &TagHandler{DB: db}
+	authH := &AuthHandler{DB: db}
 
-	r.GET("/tasks", taskH.GetTaskListHandler)
-	r.POST("/tasks", taskH.CreateTaskHandler)
-	r.DELETE("/tasks/:id", taskH.DeleteTaskHandler)
-	r.GET("/tasks/:id", taskH.GetTaskIdHandler)
-	r.PUT("/tasks/:id", taskH.UpdateTaskHandler)
+	r.POST("/register", authH.CreateUserHandler)
+	r.POST("/login", authH.LoginHandler)
 
-	r.GET("/categories", catH.GetCategoryListHandler)
-	r.POST("/categories", catH.CreateCategoryHandler)
+	protected := r.Group("/")
+	protected.Use(AuthMiddleware)
 
-	r.GET("/tags", tagH.GetTagListHandler)
-	r.POST("/tags", tagH.CreateTagHandler)
+	protected.GET("/tasks", taskH.GetTaskListHandler)
+	protected.POST("/tasks", taskH.CreateTaskHandler)
+	protected.DELETE("/tasks/:id", taskH.DeleteTaskHandler)
+	protected.GET("/tasks/:id", taskH.GetTaskIdHandler)
+	protected.PUT("/tasks/:id", taskH.UpdateTaskHandler)
+
+	protected.GET("/categories", catH.GetCategoryListHandler)
+	protected.POST("/categories", catH.CreateCategoryHandler)
+
+	protected.GET("/tags", tagH.GetTagListHandler)
+	protected.POST("/tags", tagH.CreateTagHandler)
+
 }

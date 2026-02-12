@@ -2,11 +2,16 @@ package http
 
 import (
 	"fmt"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/dsolyakin/task-tracker/domain"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type TaskHandler struct {
@@ -18,6 +23,10 @@ type CategoryHandler struct {
 }
 
 type TagHandler struct {
+	DB *gorm.DB
+}
+
+type AuthHandler struct {
 	DB *gorm.DB
 }
 
@@ -166,4 +175,90 @@ func (tg *TagHandler) GetTagListHandler(c *gin.Context) {
 	}
 
 	c.JSON(200, tag)
+}
+
+func (a *AuthHandler) CreateUserHandler(c *gin.Context) {
+	var input struct {
+		FirstName string `json:"first_name" binding:"required"`
+		Email     string `json:"email" binding:"required"`
+		Password  string `json:"password" binding:"required"`
+	}
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		fmt.Println("CreateUser. Ошибка парсинга json:", err)
+		c.JSON(400, gin.H{"error": "Неверный формат данных"})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Пароль слишком длинный"})
+		return
+	}
+
+	user := domain.User{
+		FirstName: input.FirstName,
+		Email:     input.Email,
+		Password:  string(hashedPassword),
+	}
+
+	result := a.DB.Create(&user)
+	err = result.Error
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Пользователь с таким Email уже существует"})
+		return
+	}
+
+	c.JSON(201, gin.H{"message": "Регистрация успешна"})
+
+}
+
+func (a *AuthHandler) LoginHandler(c *gin.Context) {
+	var input struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		fmt.Println("Login. Ошибка парсинга json:", err)
+		c.JSON(400, gin.H{"error": "Неверный формат данных"})
+		return
+	}
+
+	var user domain.User
+	if err := a.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
+		c.JSON(401, gin.H{"error": "Неверный логин или пароль"})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Неверный логин или пароль"})
+		return
+	}
+	token, err := GenerateToken(user.ID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Не удалось создать токен"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"token": token,
+		"user":  user,
+	})
+
+}
+
+func GenerateToken(userID uint) (string, error) {
+	secret := []byte(os.Getenv("JWT_SECRET"))
+
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(secret)
 }
