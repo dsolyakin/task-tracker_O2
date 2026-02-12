@@ -1,7 +1,9 @@
 package domain
 
 type Task struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID          int       `json:"id" gorm:"primaryKey"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CategoryID  *uint     `json:"category_id" gorm:"default:null"`
+	Category    *Category `json:"category" gorm:"foreignKey:CategoryID"`
 }

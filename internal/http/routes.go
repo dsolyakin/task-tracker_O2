@@ -6,15 +6,15 @@ import (
 )
 
 func InitRoutes(r *gin.Engine, db *gorm.DB) {
-	h := &TaskHandler{DB: db}
+	taskH := &TaskHandler{DB: db}
+	catH := &CategoryHandler{DB: db}
 
-	r.GET("/tasks", h.GetTaskListHandler)
+	r.GET("/tasks", taskH.GetTaskListHandler)
+	r.POST("/tasks", taskH.CreateTaskHandler)
+	r.DELETE("/tasks/:id", taskH.DeleteTaskHandler)
+	r.GET("/tasks/:id", taskH.GetTaskIdHandler)
+	r.PUT("/tasks/:id", taskH.UpdateTaskHandler)
 
-	r.POST("/tasks", h.CreateTaskHandler)
-
-	r.DELETE("/tasks/:id", h.DeleteTaskHandler)
-
-	r.GET("/tasks/:id", h.GetTaskIdHandler)
-
-	r.PUT("/tasks/:id", h.UpdateTaskHandler)
+	r.GET("/categories", catH.GetCategoryListHandler)
+	r.POST("/categories", catH.CreateCategoryHandler)
 }
