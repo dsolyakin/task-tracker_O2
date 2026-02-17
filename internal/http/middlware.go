@@ -1,23 +1,21 @@
 package http
 
 import (
-	"net/http"
-	"os"
-
+	"github.com/dsolyakin/task-tracker/internal/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware(c *gin.Context) {
 	header := c.GetHeader("Authorization")
-
+	if len(header) < 8 {
+		c.AbortWithStatusJSON(401, gin.H{"error": "Ошибка токена"})
+		return
+	}
 	tokenString := header[7:]
-	token, _ := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
 
-	if token == nil || !token.Valid {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "некорректный токен"})
+	err := utils.ParseToken(tokenString)
+	if err != nil {
+		c.AbortWithStatusJSON(401, gin.H{"error": "Ошибка токена"})
 		return
 	}
 	c.Next()

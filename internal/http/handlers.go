@@ -2,12 +2,9 @@ package http
 
 import (
 	"fmt"
-	"os"
-	"time"
-
-	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/dsolyakin/task-tracker/domain"
+	"github.com/dsolyakin/task-tracker/internal/utils"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
@@ -238,9 +235,10 @@ func (a *AuthHandler) LoginHandler(c *gin.Context) {
 		c.JSON(401, gin.H{"error": "Неверный логин или пароль"})
 		return
 	}
-	token, err := GenerateToken(user.ID)
+
+	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Не удалось создать токен"})
+		c.JSON(400, gin.H{"error": "Ошибка генерации токена"})
 		return
 	}
 
@@ -260,16 +258,4 @@ func (a *AuthHandler) DeleteUserHandler(c *gin.Context) {
 		return
 	}
 	c.Status(204)
-}
-
-func GenerateToken(userID uint) (string, error) {
-	secret := []byte(os.Getenv("JWT_SECRET"))
-
-	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(secret)
 }
